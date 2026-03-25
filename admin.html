@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CampusFix Admin</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>CampusFix Complaints</h1>
+
+<button onclick="logout()">Logout</button>
+
+
+<!-- 🔥 DASHBOARD -->
+<div class="dashboard">
+
+    <div class="card">
+        <h3>Total</h3>
+        <p id="totalCount">0</p>
+    </div>
+
+    <div class="card">
+        <h3>Pending</h3>
+        <p id="pendingCount">0</p>
+    </div>
+
+    <div class="card">
+        <h3>Resolved</h3>
+        <p id="resolvedCount">0</p>
+    </div>
+
+</div>
+
+
+<!-- 📋 TABLE -->
+<table>
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Roll</th>
+<th>Problem</th>
+<th>Location</th>
+<th>Description</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="tableBody"></tbody>
+
+</table>
+
+
+<script>
+
+let token = localStorage.getItem("token");
+
+/* 🔐 Protect page */
+if (!token) {
+    window.location.href = "login.html";
+}
+
+
+/* 🔄 Load data */
+function loadComplaints() {
+
+    fetch("http://127.0.0.1:3000/complaints", {
+        headers: {
+            "Authorization": token
+        }
+    })
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        let table = document.getElementById("tableBody");
+        table.innerHTML = "";
+
+
+        /* 📊 Dashboard count */
+        let total = data.length;
+
+        let pending = data.filter(c => c.status === "Pending").length;
+
+        let resolved = data.filter(c => c.status === "Resolved").length;
+
+        document.getElementById("totalCount").innerText = total;
+        document.getElementById("pendingCount").innerText = pending;
+        document.getElementById("resolvedCount").innerText = resolved;
+
+
+        /* 📋 Table */
+        data.forEach((c, i) => {
+
+            let row = `
+
+<tr>
+
+<td>${c.name}</td>
+<td>${c.roll}</td>
+<td>${c.problem}</td>
+<td>${c.location}</td>
+<td>${c.description}</td>
+
+<td>
+<span class="${c.status === 'Resolved' ? 'resolved' : 'pending'}">
+${c.status}
+</span>
+</td>
+
+<td>
+
+${c.status === "Pending" 
+? `<button class="resolveBtn" onclick="resolveComplaint(${i})">Resolve</button>` 
+: `<span style="color:green;font-weight:bold;">✔ Done</span>`}
+
+<button class="deleteBtn" onclick="deleteComplaint(${i})">Delete</button>
+
+</td>
+
+</tr>
+
+`;
+
+            table.innerHTML += row;
+
+        });
+
+    });
+
+}
+
+
+/* ✅ Resolve */
+function resolveComplaint(index) {
+
+    fetch("http://127.0.0.1:3000/resolve/" + index, {
+
+        method: "PUT",
+
+        headers: {
+            "Authorization": token
+        }
+
+    })
+
+    .then(() => loadComplaints());
+
+}
+
+
+/* ❌ Delete */
+function deleteComplaint(index) {
+
+    if (confirm("Delete this complaint?")) {
+
+        fetch("http://127.0.0.1:3000/delete/" + index, {
+
+            method: "DELETE",
+
+            headers: {
+                "Authorization": token
+            }
+
+        })
+
+        .then(() => loadComplaints());
+
+    }
+
+}
+
+
+/* 🚪 Logout */
+function logout() {
+
+    localStorage.removeItem("token");
+
+    window.location.href = "login.html";
+
+}
+
+
+window.onload = loadComplaints;
+
+</script>
+
+</body>
+</html>

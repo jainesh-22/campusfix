@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CampusFix</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>CampusFix</h1>
+
+<!-- 🔘 NAV BUTTONS -->
+<div style="text-align:center; margin-top:20px;">
+    <button onclick="showForm()">Submit Complaint</button>
+    <button onclick="showDashboard()">View Dashboard</button>
+</div>
+
+
+<!-- 📝 FORM SECTION -->
+<div id="formSection" class="container">
+    <img src = "logo.png" class="logo"
+    <h2>Submit Complaint</h2>
+
+    <form>
+
+        <label>Name:</label>
+        <input type="text" id="name"
+        placeholder = "Enter your name">
+
+        <label>Roll:</label>
+        <input type="text" id="roll"
+        placeholder = "Enter your roll number">
+
+        <label>Problem:</label>
+        <select id="problem">
+            <option>Electricity Issue</option>
+            <option>Water Leakage</option>
+            <option>Broken Furniture</option>
+            <option>WIFI not working</option>
+            <option>Cleaning Issue</option>
+            <option>Other issues</option>
+
+        </select>
+
+        <label>Location:</label>
+        <input type="text" id="location"
+        placeholder="Enter room NO / Location">
+
+        <label>Description:</label>
+        <textarea id="description" 
+        placeholder="Describe your problem here"></textarea>
+            
+
+        <button type="button" onclick="submitForm()">Submit</button>
+
+    </form>
+
+    <p id="message"></p>
+
+</div>
+
+
+<!-- 📊 DASHBOARD SECTION -->
+<div id="dashboardSection" style="display:none;">
+
+    <h2 style="text-align:center;">Complaints Dashboard</h2>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Problem</th>
+                <th>Location</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody id="tableBody"></tbody>
+
+    </table>
+
+</div>
+
+
+<script>
+
+/* 🔁 Switch Sections */
+function showForm() {
+    document.getElementById("formSection").style.display = "block";
+    document.getElementById("dashboardSection").style.display = "none";
+}
+
+function showDashboard() {
+    document.getElementById("formSection").style.display = "none";
+    document.getElementById("dashboardSection").style.display = "block";
+    loadComplaints();
+}
+
+
+/* 📤 Submit */
+function submitForm() {
+
+    let name = document.getElementById("name").value.trim();
+    let roll = document.getElementById("roll").value.trim();
+    let problem = document.getElementById("problem").value;
+    let location = document.getElementById("location").value.trim();
+    let description = document.getElementById("description").value.trim();
+
+    if (!name || !roll || !location || !description) {
+        document.getElementById("message").innerText = "Fill all fields ❌";
+        return;
+    }
+
+    fetch("http://127.0.0.1:3000/submit", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ name, roll, problem, location, description })
+    })
+    .then(res => res.json())
+    .then(() => {
+        document.getElementById("message").innerText = "Submitted ✅";
+        document.querySelector("form").reset();
+    });
+
+}
+
+
+/* 📥 Load Dashboard */
+function loadComplaints() {
+
+    fetch("http://127.0.0.1:3000/complaints")
+    .then(res => res.json())
+    .then(data => {
+
+        let table = document.getElementById("tableBody");
+        table.innerHTML = "";
+
+        data.forEach(c => {
+
+            table.innerHTML += `
+            <tr>
+                <td>${c.name}</td>
+                <td>${c.problem}</td>
+                <td>${c.location}</td>
+                <td>
+                <span class="${c.status === 'Resolved' ? 'resolved' : 'pending'}">
+                ${c.status}
+                </span>
+                </td>
+            </tr>
+            `;
+
+        });
+
+    });
+
+}
+
+</script>
+
+</body>
+</html>
