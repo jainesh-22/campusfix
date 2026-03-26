@@ -113,7 +113,7 @@ function submitForm() {
         return;
     }
 
-    fetch("http://127.0.0.1:3000/submit", {
+    fetch("https://campusfix-1.onrender.com/submit", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ name, roll, problem, location, description })
@@ -130,7 +130,7 @@ function submitForm() {
 /* 📥 Load Dashboard */
 function loadComplaints() {
 
-    fetch("http://127.0.0.1:3000/complaints")
+    fetch("https://campusfix-1.onrender.com/complaints")
     .then(res => res.json())
     .then(data => {
 
